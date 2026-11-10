@@ -102,10 +102,6 @@ object RepositoryManager {
             RepositoryData(
                 name = "Phisher Repo",
                 url = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
-            ),
-            RepositoryData(
-                name = "Storm & Anime Repo",
-                url = "https://codeberg.org/Stormunblessed/storm-ext/raw/branch/main/storm.json"
             )
         )
         val custom = getKey<Array<RepositoryData>>("PREBUILT_REPOSITORIES") ?: emptyArray()
@@ -255,10 +251,6 @@ object RepositoryManager {
             RepositoryData(
                 name = "Phisher Repo",
                 url = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
-            ),
-            RepositoryData(
-                name = "Storm & Anime Repo",
-                url = "https://codeberg.org/Stormunblessed/storm-ext/raw/branch/main/storm.json"
             )
         )
         val saved = getKey<Array<RepositoryData>>(REPOSITORIES_KEY) ?: emptyArray()

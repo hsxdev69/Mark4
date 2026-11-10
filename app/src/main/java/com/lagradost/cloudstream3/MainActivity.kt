@@ -87,6 +87,7 @@ import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
 import com.lagradost.cloudstream3.network.initClient
 import com.lagradost.cloudstream3.plugins.PluginManager
+import com.lagradost.cloudstream3.plugins.PluginData
 import com.lagradost.cloudstream3.plugins.PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins
 import com.lagradost.cloudstream3.plugins.PluginManager.loadSinglePlugin
 import com.lagradost.cloudstream3.receivers.VideoDownloadRestartReceiver
@@ -2034,21 +2035,45 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             removeKey(USER_SELECTED_HOMEPAGE_API)
         }
 
-        try {
-            if (getKey<Boolean>(HAS_DONE_SETUP_KEY, false) != true) {
-                navController.navigate(R.id.navigation_setup_language)
-                // If no plugins bring up extensions screen
-            } else if (PluginManager.getPluginsOnline().isEmpty()
-                && PluginManager.getPluginsLocal().isEmpty()
-//                && PREBUILT_REPOSITORIES.isNotEmpty()
-            ) {
-                navController.navigate(
-                    R.id.navigation_setup_extensions,
-                    SetupFragmentExtensions.newInstance(false)
-                )
+        setKey(HAS_DONE_SETUP_KEY, true)
+        ioSafe {
+            safe {
+                val phisherRepoUrl = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
+                val targetFile = PluginManager.getPluginPath(this@MainActivity, "AniVortex", phisherRepoUrl)
+                if (!targetFile.exists()) {
+                    targetFile.parentFile?.mkdirs()
+                    try {
+                        assets.open("plugins/AniVortex.cs3").use { input ->
+                            targetFile.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        val data = PluginData(
+                            "AniVortex",
+                            "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/builds/AniVortex.cs3",
+                            true,
+                            targetFile.absolutePath,
+                            PluginManager.PLUGIN_VERSION_NOT_SET
+                        )
+                        PluginManager.loadPlugin(this@MainActivity, targetFile, data)
+                    } catch (e: Throwable) {
+                        logError(e)
+                    }
+                }
+                val allPlugins = PluginManager.getPluginsOnline() + PluginManager.getPluginsLocal()
+                val hasAniVortex = allPlugins.any { it.first.internalName == "AniVortex" }
+                if (!hasAniVortex || !targetFile.exists()) {
+                    PluginManager.downloadPlugin(
+                        this@MainActivity,
+                        "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/builds/AniVortex.cs3",
+                        null,
+                        "AniVortex",
+                        phisherRepoUrl,
+                        true
+                    )
+                }
+                DataStoreHelper.currentHomePage = "AniVortex"
             }
-        } catch (e: Exception) {
-            logError(e)
         }
 
 //        Used to check current focus for TV

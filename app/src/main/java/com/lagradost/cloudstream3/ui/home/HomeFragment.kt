@@ -321,7 +321,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
         fun validateChips(header: TvtypesChipsBinding?, validTypes: List<TvType>) {
             if (header == null) return
             val pairList = getPairList(header)
+            val allowedButtons = setOf(header.homeSelectMovies, header.homeSelectTvSeries, header.homeSelectAnime)
             for ((button, types) in pairList) {
+                if (button !in allowedButtons) {
+                    button?.isVisible = false
+                    continue
+                }
                 val isValid = validTypes.any { types.contains(it) }
                 button?.isVisible = isValid
             }
@@ -355,7 +360,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
         ) {
             if (header == null) return
             val pairList = getPairList(header)
+            val allowedButtons = setOf(header.homeSelectMovies, header.homeSelectTvSeries, header.homeSelectAnime)
             for ((button, types) in pairList) {
+                if (button !in allowedButtons) {
+                    button?.isVisible = false
+                    button?.isChecked = false
+                    continue
+                }
                 val isValid = validTypes.any { types.contains(it) }
                 button?.isVisible = isValid
                 button?.isChecked = isValid && selectedTypes.any { types.contains(it) }

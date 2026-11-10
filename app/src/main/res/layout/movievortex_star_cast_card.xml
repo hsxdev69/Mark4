@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/actor_card_root"
+    android:layout_width="98dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="98dp"
+        android:layout_height="128dp"
+        app:cardBackgroundColor="#18181D"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
+
+        <ImageView
+            android:id="@+id/actor_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/outline_big_15_gray" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/actor_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-medium"
+        tools:text="Leonardo DiCaprio" />
+</LinearLayout>

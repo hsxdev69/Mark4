@@ -13,10 +13,12 @@ import android.view.WindowManager
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
@@ -27,6 +29,9 @@ import androidx.core.view.doOnLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.lagradost.cloudstream3.databinding.MovievortexCategoryChipBinding
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import com.lagradost.cloudstream3.APIHolder.getApiFromNameNull
 import com.lagradost.cloudstream3.AllLanguagesName
 import com.lagradost.cloudstream3.AnimeSearchResponse
@@ -112,6 +117,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
     private val searchViewModel: SearchViewModel by activityViewModels()
     private var bottomSheetDialog: BottomSheetDialog? = null
+    private var realTimeSearchJob: Job? = null
 
     private val speechRecognizerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -141,6 +147,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     }
 
     override fun onDestroyView() {
+        realTimeSearchJob?.cancel()
         hideKeyboard()
         bottomSheetDialog?.ownHide()
         activity?.detachBackPressedCallback("SearchFragment")
@@ -232,11 +239,153 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         HomeFragment.configEvent.invoke()
     }
 
+    private fun initDiscoveryView(binding: FragmentSearchBinding) {
+        val recentAdapter = RecentSearchMediaAdapter { item ->
+            if (item.searchResponse != null) {
+                SearchHelper.handleSearchClickCallback(
+                    SearchClickCallback(
+                        SEARCH_ACTION_LOAD,
+                        binding.root,
+                        0,
+                        item.searchResponse
+                    )
+                )
+            } else {
+                binding.mainSearch.setQuery(item.title, true)
+            }
+        }
+        binding.recentSearchRecycler.adapter = recentAdapter
+
+        val starCastAdapter = StarCastAdapter { actor ->
+            binding.mainSearch.setQuery(actor.name, true)
+        }
+        binding.actorsRecycler.adapter = starCastAdapter
+
+        val popularAdapter = RecentSearchMediaAdapter { item ->
+            binding.mainSearch.setQuery(item.title, true)
+        }
+        binding.popularSearchRecycler.adapter = popularAdapter
+
+        // Populate Categories matching user's screenshot
+        context?.let { ctx ->
+            val inflater = LayoutInflater.from(ctx)
+            val row1 = listOf(
+                "Biographical" to 932,
+                "Western" to 673,
+                "Documentary" to 126,
+                "Action" to 1096,
+                "Fantasy" to 475
+            )
+            val row2 = listOf(
+                "Musical" to 398,
+                "War" to 56,
+                "Independent" to 49,
+                "Crime" to 399,
+                "Sci-fi" to 821
+            )
+            val row3 = listOf(
+                "Comedy" to 736,
+                "Horror" to 412,
+                "Romance" to 580,
+                "Animation" to 620,
+                "Thriller" to 750
+            )
+
+            binding.categoriesRow1.removeAllViews()
+            binding.categoriesRow2.removeAllViews()
+            binding.categoriesRow3.removeAllViews()
+
+            fun addChipsToRow(rowLayout: LinearLayout, list: List<Pair<String, Int>>) {
+                for ((name, count) in list) {
+                    val chipBinding = MovievortexCategoryChipBinding.inflate(inflater, rowLayout, false)
+                    chipBinding.chipName.text = name
+                    chipBinding.chipCount.text = count.toString()
+                    chipBinding.root.setOnClickListener {
+                        binding.mainSearch.setQuery(name, true)
+                    }
+                    rowLayout.addView(chipBinding.root)
+                }
+            }
+
+            addChipsToRow(binding.categoriesRow1, row1)
+            addChipsToRow(binding.categoriesRow2, row2)
+            addChipsToRow(binding.categoriesRow3, row3)
+        }
+
+        // Populate Star Cast ("Based on actor" from user request)
+        val starCastList = listOf(
+            StarCastItem("Leonardo DiCaprio", "https://image.tmdb.org/t/p/w300/wo2hJpn04vbtmh0B9utCFdsQhxM.jpg"),
+            StarCastItem("Scarlett Johansson", "https://image.tmdb.org/t/p/w300/TiJIJGNWk0r1Y4bYuB50clneUd.jpg"),
+            StarCastItem("George Clooney", "https://image.tmdb.org/t/p/w300/kHiVvbh2zb5J8cR4XmBvX4v2H7C.jpg"),
+            StarCastItem("Johnny Depp", "https://image.tmdb.org/t/p/w300/ca3x0OfIKbJpp28SqaLEr42mrY8.jpg"),
+            StarCastItem("Cillian Murphy", "https://image.tmdb.org/t/p/w300/dm6V2iqUea2ZEmxkn52F942Bpt2.jpg"),
+            StarCastItem("Tom Cruise", "https://image.tmdb.org/t/p/w300/8qB9PiZi4agqaz9U7HgiyZvgqdE.jpg"),
+            StarCastItem("Margot Robbie", "https://image.tmdb.org/t/p/w300/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg"),
+            StarCastItem("Robert Downey Jr.", "https://image.tmdb.org/t/p/w300/5qHNjhtjMD4YWH3vi0lZ2947ggw.jpg"),
+            StarCastItem("Christian Bale", "https://image.tmdb.org/t/p/w300/b7fTC9WFkgqGOv77mLQegGR5YX1.jpg"),
+            StarCastItem("Zendaya", "https://image.tmdb.org/t/p/w300/r2GQ11Kx9B2a7v8A31f4H6gY7fV.jpg"),
+            StarCastItem("Brad Pitt", "https://image.tmdb.org/t/p/w300/cckcYc2v0yh1tc9QjRelptsqRFQ.jpg"),
+            StarCastItem("Keanu Reeves", "https://image.tmdb.org/t/p/w300/4D0PpNI0kmP58hgrwGC3wC5x0Vy.jpg"),
+            StarCastItem("Ryan Gosling", "https://image.tmdb.org/t/p/w300/lyUyVARlaPrPVdmQ96al9OqRIHg.jpg"),
+            StarCastItem("Shah Rukh Khan", "https://image.tmdb.org/t/p/w300/1Xdd36XgqM8u5aW9y3B9Y4bN9N.jpg")
+        )
+        starCastAdapter.submitList(starCastList)
+
+        // Populate Popular Search
+        val popularList = listOf(
+            RecentMediaItem("Blade Runner 2049", "Movie", "https://image.tmdb.org/t/p/w300/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"),
+            RecentMediaItem("Interstellar", "Movie", "https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"),
+            RecentMediaItem("Dune: Part Two", "Movie", "https://image.tmdb.org/t/p/w300/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
+            RecentMediaItem("Oppenheimer", "Movie", "https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"),
+            RecentMediaItem("The Dark Knight", "Movie", "https://image.tmdb.org/t/p/w300/qJ2tW6WMUDux911r6m7haRef0WH.jpg"),
+            RecentMediaItem("The Big 4", "TV Series", "https://image.tmdb.org/t/p/w300/r2JkrYYq6Xh4k6m4X7e2a9sU3k7.jpg"),
+            RecentMediaItem("Breaking Bad", "TV Series", "https://image.tmdb.org/t/p/w300/ggFHVNu6YYI5L9pCfOacjizRGt.jpg"),
+            RecentMediaItem("Stranger Things", "TV Series", "https://image.tmdb.org/t/p/w300/49WJfeN0moxb9IPfGn8AIqMGskD.jpg")
+        )
+        popularAdapter.submitList(popularList)
+
+        // Load recent searches asynchronously
+        loadRecentSearches(recentAdapter)
+
+        binding.recentSearchSeeAll.setOnClickListener {
+            binding.searchDiscoveryScroll.isGone = true
+            binding.searchHistoryRecycler.isVisible = true
+        }
+    }
+
+    private fun loadRecentSearches(adapter: RecentSearchMediaAdapter) {
+        ioSafe {
+            val resumeList = HomeViewModel.getResumeWatching() ?: emptyList()
+            val recentItems = if (resumeList.isNotEmpty()) {
+                resumeList.take(10).map {
+                    RecentMediaItem(
+                        title = it.name,
+                        type = if (it.type == TvType.Movie) "Movie" else "TV Series",
+                        posterUrl = it.posterUrl ?: "",
+                        searchResponse = it
+                    )
+                }
+            } else {
+                listOf(
+                    RecentMediaItem("Blade Runner 2049", "Movie", "https://image.tmdb.org/t/p/w300/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"),
+                    RecentMediaItem("The Revenant", "Movie", "https://image.tmdb.org/t/p/w300/oXU30erIm58t34BsEL9b8qP94UW.jpg"),
+                    RecentMediaItem("The Big 4", "TV Series", "https://image.tmdb.org/t/p/w300/r2JkrYYq6Xh4k6m4X7e2a9sU3k7.jpg"),
+                    RecentMediaItem("Dune: Part Two", "Movie", "https://image.tmdb.org/t/p/w300/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
+                    RecentMediaItem("Oppenheimer", "Movie", "https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg")
+                )
+            }
+            main {
+                adapter.submitList(recentItems)
+            }
+        }
+    }
+
     override fun onBindingCreated(
         binding: FragmentSearchBinding,
         savedInstanceState: Bundle?
     ) {
         reloadRepos()
+        initDiscoveryView(binding)
         binding.apply {
             val adapter =
                 SearchAdapter(
@@ -430,8 +579,17 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
         binding.mainSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
+                realTimeSearchJob?.cancel()
                 search(query)
                 searchViewModel.clearSuggestions()
+
+                binding.apply {
+                    searchDiscoveryScroll.isGone = true
+                    searchHistoryRecycler.isGone = true
+                    searchMasterRecycler.isVisible = isAdvancedSearch
+                    searchAutofitResults.isVisible = !isAdvancedSearch
+                    searchSuggestionsRecycler.isGone = true
+                }
 
                 binding.mainSearch.let {
                     hideKeyboard(it)
@@ -441,24 +599,42 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                //searchViewModel.quickSearch(newText)
-                val showHistory = newText.isBlank()
-                if (showHistory) {
+                realTimeSearchJob?.cancel()
+                val isBlank = newText.isBlank()
+                if (isBlank) {
                     searchViewModel.clearSearch()
                     searchViewModel.updateHistory()
                     searchViewModel.clearSuggestions()
+                    (binding.recentSearchRecycler.adapter as? RecentSearchMediaAdapter)?.let {
+                        loadRecentSearches(it)
+                    }
+                    binding.apply {
+                        searchDiscoveryScroll.isVisible = true
+                        searchAutofitResults.isGone = true
+                        searchMasterRecycler.isGone = true
+                        searchHistoryRecycler.isGone = true
+                        searchSuggestionsRecycler.isGone = true
+                    }
                 } else {
-                    // Fetch suggestions when user is typing (if enabled)
                     if (isSearchSuggestionsEnabled) {
                         searchViewModel.fetchSuggestions(newText)
                     }
-                }
-                binding.apply {
-                    searchHistoryRecycler.isVisible = showHistory
-                    searchMasterRecycler.isVisible = !showHistory && isAdvancedSearch
-                    searchAutofitResults.isVisible = !showHistory && !isAdvancedSearch
-                    // Hide suggestions when showing history or showing search results
-                    searchSuggestionsRecycler.isVisible = !showHistory && isSearchSuggestionsEnabled
+                    binding.apply {
+                        searchDiscoveryScroll.isGone = true
+                        searchHistoryRecycler.isGone = true
+                        searchMasterRecycler.isVisible = isAdvancedSearch
+                        searchAutofitResults.isVisible = !isAdvancedSearch
+                        searchSuggestionsRecycler.isVisible = isSearchSuggestionsEnabled
+                    }
+
+                    if (newText.trim().length >= 2) {
+                        realTimeSearchJob = ioSafe {
+                            delay(350)
+                            main {
+                                search(newText.trim())
+                            }
+                        }
+                    }
                 }
 
                 return true

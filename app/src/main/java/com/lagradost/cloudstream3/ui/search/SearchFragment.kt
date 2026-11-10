@@ -429,6 +429,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                     val apiName = obj.optString("apiName")
                     if (title.isNotBlank()) {
                         val resp = if (url.isNotBlank() && apiName.isNotBlank()) {
+                            @Suppress("DEPRECATION_ERROR")
                             MovieSearchResponse(
                                 name = title,
                                 url = url,

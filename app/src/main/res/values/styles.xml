@@ -819,13 +819,16 @@
     </style>
 
     <style name="ExtendedFloatingActionButton">
-        <item name="elevation">0dp</item>
+        <item name="elevation">6dp</item>
         <item name="android:textStyle">bold</item>
         <item name="backgroundTint">?attr/primaryGrayBackground</item>
         <item name="tint">?attr/colorPrimary</item>
         <item name="textColor">?attr/colorPrimary</item>
         <item name="iconTint">?attr/textColor</item>
-        <item name="android:layout_margin">16dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:layout_marginBottom">90dp</item>
         <item name="android:layout_gravity">end|bottom</item>
         <item name="textAllCaps">false</item>
         <item name="android:gravity">center</item>

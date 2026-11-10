@@ -1,18 +1,20 @@
 package com.lagradost.cloudstream3.syncproviders.providers
 
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.syncproviders.AuthData
 import com.lagradost.cloudstream3.syncproviders.SyncAPI
 import com.lagradost.cloudstream3.syncproviders.SyncIdName
 import com.lagradost.cloudstream3.ui.WatchType
+import com.lagradost.cloudstream3.ui.download.DownloadObjects
 import com.lagradost.cloudstream3.ui.library.ListSorting
-import com.lagradost.cloudstream3.ui.settings.Globals.TV
-import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.utils.Coroutines.ioWork
+import com.lagradost.cloudstream3.utils.DOWNLOAD_HEADER_CACHE
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllFavorites
-import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllSubscriptions
+import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllResumeStateIds
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllWatchStateIds
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getBookmarkedData
+import com.lagradost.cloudstream3.utils.DataStoreHelper.getLastWatched
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getResultWatchState
 import com.lagradost.cloudstream3.utils.txt
 
@@ -26,66 +28,83 @@ class LocalList : SyncAPI() {
     override var requireLibraryRefresh = true
     override val syncIdName = SyncIdName.LocalList
 
-    override suspend fun library(auth : AuthData?): SyncAPI.LibraryMetadata? {
+    override suspend fun library(auth: AuthData?): SyncAPI.LibraryMetadata? {
         val watchStatusIds = ioWork {
             getAllWatchStateIds()?.map { id ->
                 Pair(id, getResultWatchState(id))
             }
-        }?.distinctBy { it.first } ?: return null
+        }?.distinctBy { it.first } ?: emptyList()
 
         val list = ioWork {
-            val isTrueTv = isLayout(TV)
-
-            val baseMap = WatchType.entries.filter { it != WatchType.NONE }.associate {
-                // None is not something to display
-                it.stringRes to emptyList<SyncAPI.LibraryItem>()
-            } + mapOf(
-                R.string.favorites_list_name to emptyList()
-            ) + if (!isTrueTv) {
-                mapOf(
-                    R.string.subscription_list_name to emptyList()
-                )
-            } else {
-                emptyMap()
+            // 1. Favorites
+            val favoritesItems = getAllFavorites().mapNotNull {
+                it.toLibraryItem()
             }
 
-            val watchStatusMap = watchStatusIds.groupBy { it.second.stringRes }.mapValues { group ->
-                group.value.mapNotNull {
-                    getBookmarkedData(it.first)?.toLibraryItem(it.first.toString())
+            // 2. Watchlist (Plan to Watch, Watching, On Hold)
+            val watchlistItems = watchStatusIds.filter {
+                it.second == WatchType.PLANTOWATCH || it.second == WatchType.WATCHING || it.second == WatchType.ONHOLD
+            }.mapNotNull {
+                getBookmarkedData(it.first)?.toLibraryItem(it.first.toString())
+            }
+
+            // 3. History (Completed & Resume Watching)
+            val completedItems = watchStatusIds.filter {
+                it.second == WatchType.COMPLETED
+            }.mapNotNull {
+                getBookmarkedData(it.first)?.toLibraryItem(it.first.toString())
+            }
+
+            val resumeWatchingIds = getAllResumeStateIds() ?: emptyList()
+            val resumeItems = resumeWatchingIds.mapNotNull { id ->
+                val bookmarked = getBookmarkedData(id)
+                if (bookmarked != null) {
+                    bookmarked.toLibraryItem(id.toString())
+                } else {
+                    val resume = getLastWatched(id)
+                    val headerCache = getKey<DownloadObjects.DownloadHeaderCached>(
+                        DOWNLOAD_HEADER_CACHE,
+                        resume?.parentId?.toString() ?: id.toString()
+                    )
+                    headerCache?.let { header ->
+                        SyncAPI.LibraryItem(
+                            name = header.name,
+                            url = header.url,
+                            syncId = id.toString(),
+                            episodesCompleted = null,
+                            episodesTotal = null,
+                            personalRating = null,
+                            lastUpdatedUnixTime = resume?.updateTime ?: System.currentTimeMillis(),
+                            apiName = header.apiName,
+                            type = header.type,
+                            posterUrl = header.poster,
+                            posterHeaders = null,
+                            quality = null,
+                            releaseDate = null,
+                            id = id,
+                            plot = null,
+                            score = null,
+                            tags = null
+                        )
+                    }
                 }
             }
 
-            val favoritesMap = mapOf(R.string.favorites_list_name to getAllFavorites().mapNotNull {
-                it.toLibraryItem()
-            })
+            val historyItems = (completedItems + resumeItems).distinctBy { it.url }
 
-            // Don't show subscriptions on TV
-            val result = if (isTrueTv) {
-                baseMap + watchStatusMap + favoritesMap
-            } else {
-                val subscriptionsMap =
-                    mapOf(R.string.subscription_list_name to getAllSubscriptions().mapNotNull {
-                        it.toLibraryItem()
-                    })
-
-                baseMap + watchStatusMap + subscriptionsMap + favoritesMap
-            }
-
-            result
+            listOf(
+                SyncAPI.LibraryList(txt(R.string.favorites_list_name), favoritesItems),
+                SyncAPI.LibraryList(txt(R.string.watchlist_tab), watchlistItems),
+                SyncAPI.LibraryList(txt(R.string.history), historyItems)
+            )
         }
 
-        return LibraryMetadata(
-            list.map { LibraryList(txt(it.key), it.value) },
+        return SyncAPI.LibraryMetadata(
+            list,
             setOf(
-                ListSorting.AlphabeticalA,
-                ListSorting.AlphabeticalZ,
                 ListSorting.UpdatedNew,
-                ListSorting.UpdatedOld,
                 ListSorting.ReleaseDateNew,
-                ListSorting.ReleaseDateOld,
-//                ListSorting.RatingHigh,
-//                ListSorting.RatingLow,
-
+                ListSorting.AlphabeticalA,
             )
         )
     }

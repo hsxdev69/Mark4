@@ -121,8 +121,7 @@ object SettingsFragmentScreen : Screen {
             subtitle = persistentListOf(
                 R.string.extension_language,
                 R.string.title_downloads,
-                R.string.pref_category_bypass,
-                R.string.pref_category_links
+                R.string.pref_category_bypass
             )
         ),
         SettingsNavigation(
@@ -138,12 +137,6 @@ object SettingsFragmentScreen : Screen {
                 R.string.pref_category_cache
             )
         ),
-        /*SettingsNavigation(
-            title = R.string.category_providers,
-            navigation = R.id.action_navigation_global_to_navigation_settings_providers,
-            screen = SettingsProvidersScreen,
-            icon = R.drawable.build_24px,
-        ),*/
         SettingsNavigation(
             title = R.string.category_ui,
             navigation = R.id.action_navigation_global_to_navigation_settings_ui,
@@ -157,18 +150,6 @@ object SettingsFragmentScreen : Screen {
             )
         ),
         SettingsNavigation(
-            title = R.string.category_updates,
-            navigation = R.id.action_navigation_global_to_navigation_settings_updates,
-            screen = SettingsUpdatesScreen,
-            icon = R.drawable.mobile_arrow_down_24px,
-            subtitle = persistentListOf(
-                R.string.pref_category_app_updates,
-                R.string.pref_category_backup,
-                R.string.pref_category_extensions,
-                R.string.pref_category_actions
-            )
-        ),
-        SettingsNavigation(
             title = R.string.category_account,
             navigation = R.id.action_navigation_global_to_navigation_settings_account,
             screen = SettingsAccountScreen,
@@ -177,13 +158,6 @@ object SettingsFragmentScreen : Screen {
                 R.string.pref_category_accounts,
                 R.string.pref_category_security
             )
-        ),
-        SettingsNavigation(
-            title = R.string.pref_category_extensions,
-            navigation = R.id.action_navigation_global_to_navigation_settings_extensions,
-            screen = null,
-            icon = R.drawable.extension_24px,
-            subtitle = persistentListOf(R.string.add_repository)
         ),
     )
 

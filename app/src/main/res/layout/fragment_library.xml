@@ -32,28 +32,22 @@
 
             <ImageView
                 android:id="@+id/provider_selector"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginStart="10dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:contentDescription="@string/change_providers_img_des"
-                android:src="@drawable/ic_baseline_extension_24"
-                app:tint="?attr/textColor" />
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/library_sort"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:layout_gravity="end|center_vertical"
+                android:layout_gravity="center_vertical"
                 android:layout_marginStart="10dp"
                 android:background="?selectableItemBackgroundBorderless"
-                android:contentDescription="@string/change_providers_img_des"
-                android:padding="5dp"
+                android:contentDescription="@string/sort"
+                android:padding="8dp"
                 android:src="@drawable/ic_baseline_sort_24"
-                android:visibility="gone"
-                app:tint="?attr/textColor"
-                tools:visibility="visible" />
+                android:visibility="visible"
+                app:tint="?attr/textColor" />
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -68,41 +62,47 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="25dp"
-
+                    android:layout_marginEnd="10dp"
                     android:iconifiedByDefault="false"
                     android:imeOptions="actionSearch"
-
                     android:inputType="text"
-                    android:nextFocusLeft="@id/nav_rail_view"
-
-                    android:nextFocusRight="@id/search_filter"
                     android:paddingStart="-10dp"
                     app:closeIcon="@drawable/ic_baseline_close_24"
                     app:iconifiedByDefault="false"
                     app:queryBackground="@color/transparent"
                     app:queryHint="@string/search_hint"
                     app:searchIcon="@drawable/search_icon"
-                    tools:ignore="RtlSymmetry">
-
-                </androidx.appcompat.widget.SearchView>
-
+                    tools:ignore="RtlSymmetry" />
 
                 <ImageView
                     android:id="@+id/list_selector"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:layout_gravity="end|center_vertical"
-                    android:background="?selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/change_providers_img_des"
-                    android:nextFocusLeft="@id/main_search"
-                    android:nextFocusRight="@id/main_search"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_baseline_filter_list_24"
-                    app:tint="?attr/textColor" />
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
 
             </FrameLayout>
         </LinearLayout>
+
+        <!-- Streamlined Clean Tabs: Favorites | Watchlist | History -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/library_tab_layout"
+            style="@style/Theme.Widget.Tabs"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:background="?attr/primaryGrayBackground"
+            android:focusable="true"
+            android:paddingHorizontal="16dp"
+            app:layout_scrollFlags="noScroll"
+            app:tabGravity="fill"
+            app:tabIndicator="@drawable/indicator_background"
+            app:tabIndicatorColor="?attr/white"
+            app:tabIndicatorGravity="center"
+            app:tabIndicatorHeight="32dp"
+            app:tabMode="fixed"
+            app:tabRippleColor="?attr/textColor"
+            app:tabSelectedTextColor="?attr/primaryBlackBackground"
+            app:tabTextAppearance="@style/TabNoCaps"
+            app:tabTextColor="?attr/textColor" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -118,7 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingBottom="40dp"
+            android:paddingBottom="90dp"
             tools:listitem="@layout/library_viewpager_page" />
 
         <LinearLayout
@@ -156,15 +156,18 @@
 
     </FrameLayout>
 
+    <!-- Floating action widgets repositioned safely above bottom nav dock -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="40dp">
+        android:layout_marginBottom="90dp">
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/library_random"
             style="@style/ExtendedFloatingActionButton"
             android:layout_gravity="bottom|start"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="90dp"
             android:text="@string/home_random"
             android:textColor="?attr/textColor"
             android:visibility="gone"
@@ -182,31 +185,13 @@
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/sort_fab"
             style="@style/ExtendedFloatingActionButton"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="90dp"
             android:text="@string/sort"
             android:textColor="?attr/textColor"
             app:icon="@drawable/ic_baseline_sort_24"
             tools:ignore="ContentDescription" />
     </FrameLayout>
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/library_tab_layout"
-        style="@style/Theme.Widget.Tabs"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_gravity="bottom"
-        android:background="?attr/primaryGrayBackground"
-        android:focusable="true"
-        android:paddingHorizontal="5dp"
-        app:layout_scrollFlags="noScroll"
-        app:tabGravity="center"
-        app:tabIndicator="@drawable/indicator_background"
-        app:tabIndicatorColor="?attr/white"
-        app:tabIndicatorGravity="center"
-        app:tabIndicatorHeight="30dp"
-        app:tabMode="scrollable"
-        app:tabRippleColor="?attr/textColor"
-        app:tabSelectedTextColor="?attr/primaryBlackBackground"
-        app:tabTextAppearance="@style/TabNoCaps"
-        app:tabTextColor="?attr/textColor" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

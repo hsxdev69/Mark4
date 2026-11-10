@@ -671,6 +671,7 @@
     <string name="unable_to_inflate">UI was unable to be created correctly, this is a MAJOR BUG and should be reported immediately %s</string>
     <string name="already_voted">You have already voted</string>
     <string name="favorites_list_name">Favorites</string>
+    <string name="watchlist_tab">Watchlist</string>
     <string name="favorite_added">%s added to favorites</string>
     <string name="favorite_removed">%s removed from favorites</string>
     <string name="action_add_to_favorites">Add to favorites</string>

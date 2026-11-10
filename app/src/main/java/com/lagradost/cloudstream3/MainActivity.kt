@@ -1717,7 +1717,14 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     navController
                 )
             }
-
+            try {
+                getOrCreateBadge(R.id.navigation_library).apply {
+                    number = 7
+                    backgroundColor = android.graphics.Color.parseColor("#F43F5E")
+                    badgeTextColor = android.graphics.Color.WHITE
+                    isVisible = true
+                }
+            } catch (_: Throwable) { }
         }
 
         binding?.navRailView?.apply {

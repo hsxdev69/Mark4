@@ -2037,7 +2037,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         setKey(HAS_DONE_SETUP_KEY, true)
         ioSafe {
-            safe {
+            try {
                 val phisherRepoUrl = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
                 val targetFile = PluginManager.getPluginPath(this@MainActivity, "AniVortex", phisherRepoUrl)
                 if (!targetFile.exists()) {
@@ -2053,7 +2053,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                             "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/builds/AniVortex.cs3",
                             true,
                             targetFile.absolutePath,
-                            PluginManager.PLUGIN_VERSION_NOT_SET
+                            Int.MIN_VALUE
                         )
                         PluginManager.loadPlugin(this@MainActivity, targetFile, data)
                     } catch (e: Throwable) {
@@ -2061,7 +2061,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     }
                 }
                 val allPlugins = PluginManager.getPluginsOnline() + PluginManager.getPluginsLocal()
-                val hasAniVortex = allPlugins.any { it.first.internalName == "AniVortex" }
+                val hasAniVortex = allPlugins.any { it.internalName == "AniVortex" }
                 if (!hasAniVortex || !targetFile.exists()) {
                     PluginManager.downloadPlugin(
                         this@MainActivity,
@@ -2073,6 +2073,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     )
                 }
                 DataStoreHelper.currentHomePage = "AniVortex"
+            } catch (t: Throwable) {
+                logError(t)
             }
         }
 

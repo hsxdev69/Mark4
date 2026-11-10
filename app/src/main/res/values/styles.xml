@@ -1136,16 +1136,16 @@
 
     <!-- MovieVortex Modern Bottom Navigation Bar Styles -->
     <style name="MovieVortex.NavText.Active" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">9sp</item>
+        <item name="android:textSize">10.5sp</item>
         <item name="android:textColor">#FFFFFFFF</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:letterSpacing">0.05</item>
+        <item name="android:letterSpacing">0.03</item>
     </style>
 
     <style name="MovieVortex.NavText.Inactive" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">9sp</item>
-        <item name="android:textColor">#FF71717A</item>
+        <item name="android:textSize">10.5sp</item>
+        <item name="android:textColor">#FFA1A1AA</item>
         <item name="android:fontFamily">sans-serif-normal</item>
-        <item name="android:letterSpacing">0.05</item>
+        <item name="android:letterSpacing">0.03</item>
     </style>
 </resources>

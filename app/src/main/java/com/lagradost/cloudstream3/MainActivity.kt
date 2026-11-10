@@ -1287,12 +1287,23 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
         binding?.apply {
-            fixSystemBarsPadding(
-                navView,
-                heightResId = R.dimen.nav_view_height,
-                padTop = false,
-                overlayCutout = false
-            )
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(navView) { view, windowInsets ->
+                val insets = windowInsets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+                val baseHeight = view.resources.getDimensionPixelSize(R.dimen.nav_view_height)
+                val totalHeight = baseHeight + insets.bottom
+                val layoutParams = view.layoutParams
+                if (layoutParams != null && layoutParams.height != totalHeight) {
+                    layoutParams.height = totalHeight
+                    view.layoutParams = layoutParams
+                }
+                val menuView = (view as? ViewGroup)?.getChildAt(0)
+                val menuParams = menuView?.layoutParams as? ViewGroup.MarginLayoutParams
+                if (menuParams != null && menuParams.bottomMargin != insets.bottom) {
+                    menuParams.bottomMargin = insets.bottom
+                    menuView.layoutParams = menuParams
+                }
+                windowInsets
+            }
 
             fixSystemBarsPadding(
                 navRailView,
@@ -1650,9 +1661,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     val syncAPI = libraryViewModel?.currentSyncApi
                     Log.i("SYNC_API", "${syncAPI?.name}, ${syncAPI?.idPrefix}")
                     val icon = if (syncAPI?.idPrefix == localListApi.idPrefix) {
-                        R.drawable.library_icon_selector
+                        R.drawable.wishlist_icon_selector
                     } else {
-                        syncAPI?.icon ?: R.drawable.library_icon_selector
+                        syncAPI?.icon ?: R.drawable.wishlist_icon_selector
                     }
 
                     binding?.apply {
@@ -1710,7 +1721,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         binding?.navView?.apply {
             itemRippleColor = rippleColor
-            itemActiveIndicatorColor = rippleColor
+            itemActiveIndicatorColor = ColorStateList.valueOf(android.graphics.Color.parseColor("#26FFFFFF"))
             setupWithNavController(navController)
             setOnItemSelectedListener { item ->
                 onNavDestinationSelected(

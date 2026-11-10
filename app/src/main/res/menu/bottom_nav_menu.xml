@@ -14,7 +14,7 @@
         android:title="@string/title_search" />
     <item
         android:id="@+id/navigation_library"
-        android:icon="@drawable/ic_baseline_favorite_border_24"
+        android:icon="@drawable/wishlist_icon_selector"
         android:title="Wishlist" />
     <item
         android:id="@+id/navigation_settings"

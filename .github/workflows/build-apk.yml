@@ -1,0 +1,73 @@
+name: Build MovieVortex APK
+
+on:
+  push:
+    branches: [ master, main ]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a GitHub Release with the APK?'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "build-apk"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleStableDebug --stacktrace --no-daemon
+
+      - name: Rename APK for Release
+        run: |
+          mkdir -p build_output
+          find app/build/outputs/apk/stable/debug/ -name "*.apk" -exec cp {} build_output/MovieVortex-1.0-debug.apk \;
+          echo "Built APK files:"
+          ls -lh build_output/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MovieVortex-1.0-debug-apk
+          path: build_output/MovieVortex-1.0-debug.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch' && inputs.create_release == true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0-${{ github.run_number }}
+          name: MovieVortex v1.0.0 (Build ${{ github.run_number }})
+          body: |
+            ### MovieVortex 1.0 Release
+            - Pre-configured with Phisher Repo & Storm/Anime Repositories.
+            - Built automatically with GitHub Actions.
+          files: build_output/MovieVortex-1.0-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

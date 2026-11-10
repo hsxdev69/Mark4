@@ -98,7 +98,18 @@ data class PluginWrapper(
 object RepositoryManager {
     const val ONLINE_PLUGINS_FOLDER = "Extensions"
     val PREBUILT_REPOSITORIES: Array<RepositoryData> by lazy {
-        getKey<Array<RepositoryData>>("PREBUILT_REPOSITORIES") ?: emptyArray()
+        val defaultRepos = arrayOf(
+            RepositoryData(
+                name = "Phisher Repo",
+                url = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
+            ),
+            RepositoryData(
+                name = "Storm & Anime Repo",
+                url = "https://codeberg.org/Stormunblessed/storm-ext/raw/branch/main/storm.json"
+            )
+        )
+        val custom = getKey<Array<RepositoryData>>("PREBUILT_REPOSITORIES") ?: emptyArray()
+        (defaultRepos + custom).distinctBy { it.url }.toTypedArray()
     }
     private val GH_REGEX =
         Regex("^https://raw.githubusercontent.com/([A-Za-z0-9-]+)/([A-Za-z0-9_.-]+)/(.*)$")
@@ -240,7 +251,18 @@ object RepositoryManager {
     }
 
     fun getRepositories(): Array<RepositoryData> {
-        return getKey<Array<RepositoryData>>(REPOSITORIES_KEY) ?: emptyArray()
+        val defaultRepos = arrayOf(
+            RepositoryData(
+                name = "Phisher Repo",
+                url = "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json"
+            ),
+            RepositoryData(
+                name = "Storm & Anime Repo",
+                url = "https://codeberg.org/Stormunblessed/storm-ext/raw/branch/main/storm.json"
+            )
+        )
+        val saved = getKey<Array<RepositoryData>>(REPOSITORIES_KEY) ?: emptyArray()
+        return (defaultRepos + saved).distinctBy { it.url }.toTypedArray()
     }
 
     // Don't want to read before we write in another thread

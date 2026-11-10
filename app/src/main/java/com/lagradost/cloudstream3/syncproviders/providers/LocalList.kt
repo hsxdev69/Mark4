@@ -1,20 +1,16 @@
 package com.lagradost.cloudstream3.syncproviders.providers
 
-import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.syncproviders.AuthData
 import com.lagradost.cloudstream3.syncproviders.SyncAPI
 import com.lagradost.cloudstream3.syncproviders.SyncIdName
 import com.lagradost.cloudstream3.ui.WatchType
-import com.lagradost.cloudstream3.ui.download.DownloadObjects
+import com.lagradost.cloudstream3.ui.home.HomeViewModel
 import com.lagradost.cloudstream3.ui.library.ListSorting
 import com.lagradost.cloudstream3.utils.Coroutines.ioWork
-import com.lagradost.cloudstream3.utils.DOWNLOAD_HEADER_CACHE
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllFavorites
-import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllResumeStateIds
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getAllWatchStateIds
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getBookmarkedData
-import com.lagradost.cloudstream3.utils.DataStoreHelper.getLastWatched
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getResultWatchState
 import com.lagradost.cloudstream3.utils.txt
 
@@ -55,39 +51,27 @@ class LocalList : SyncAPI() {
                 getBookmarkedData(it.first)?.toLibraryItem(it.first.toString())
             }
 
-            val resumeWatchingIds = getAllResumeStateIds() ?: emptyList()
-            val resumeItems = resumeWatchingIds.mapNotNull { id ->
-                val bookmarked = getBookmarkedData(id)
-                if (bookmarked != null) {
-                    bookmarked.toLibraryItem(id.toString())
-                } else {
-                    val resume = getLastWatched(id)
-                    val headerCache = getKey<DownloadObjects.DownloadHeaderCached>(
-                        DOWNLOAD_HEADER_CACHE,
-                        resume?.parentId?.toString() ?: id.toString()
-                    )
-                    headerCache?.let { header ->
-                        SyncAPI.LibraryItem(
-                            name = header.name,
-                            url = header.url,
-                            syncId = id.toString(),
-                            episodesCompleted = null,
-                            episodesTotal = null,
-                            personalRating = null,
-                            lastUpdatedUnixTime = resume?.updateTime ?: System.currentTimeMillis(),
-                            apiName = header.apiName,
-                            type = header.type,
-                            posterUrl = header.poster,
-                            posterHeaders = null,
-                            quality = null,
-                            releaseDate = null,
-                            id = id,
-                            plot = null,
-                            score = null,
-                            tags = null
-                        )
-                    }
-                }
+            val resumeWatching = HomeViewModel.getResumeWatching() ?: emptyList()
+            val resumeItems: List<SyncAPI.LibraryItem> = resumeWatching.map {
+                SyncAPI.LibraryItem(
+                    name = it.name,
+                    url = it.url,
+                    syncId = (it.parentId ?: it.id ?: 0).toString(),
+                    episodesCompleted = it.episode,
+                    episodesTotal = null,
+                    personalRating = null,
+                    lastUpdatedUnixTime = System.currentTimeMillis(),
+                    apiName = it.apiName,
+                    type = it.type,
+                    posterUrl = it.posterUrl,
+                    posterHeaders = it.posterHeaders,
+                    quality = it.quality,
+                    releaseDate = null,
+                    id = it.id,
+                    plot = null,
+                    score = it.score,
+                    tags = null
+                )
             }
 
             val historyItems = (completedItems + resumeItems).distinctBy { it.url }

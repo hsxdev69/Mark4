@@ -114,6 +114,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
         val errorProfilePic = errorProfilePics.random()
 
         fun Context.getDisplayName(apiName: String?): String? {
+            if (apiName == null) return null
+            if (apiName.contains("AniVortex", ignoreCase = true) || apiName.contains("anivortex", ignoreCase = true)) {
+                return "MovieVortex"
+            }
             return when (apiName) {
                 noneApi.name -> getString(R.string.none)
                 randomApi.name -> getString(R.string.home_random)
@@ -710,7 +714,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             homeMasterRecycler.setRecycledViewPool(ParentItemAdapter.sharedPool)
             homeMasterRecycler.adapter = homeMasterAdapter
 
-            homeApiFab.isVisible = isLayout(PHONE)
+            homeApiFab.isVisible = false
 
             homePreviewReloadProvider.setOnClickListener {
                 homeViewModel.loadAndCancel(
@@ -761,16 +765,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             homeMasterRecycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     if (isLayout(PHONE)) {
-                        // Fab is only relevant to Phone
-                        if (dy > 0) { //check for scroll down
-                            homeApiFab.shrink() // hide
-                            homeRandom.shrink()
-                        } else if (dy < -5) {
-                            if (isLayout(PHONE)) {
-                                homeApiFab.extend() // show
-                                homeRandom.extend()
-                            }
-                        }
+                        homeApiFab.isVisible = false
+                        homeRandom.isVisible = false
                     } else {
                         // Header scrolling is only relevant to TV/Emulator
 
@@ -835,6 +831,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             currentApiName = apiName
             val displayApiName = context?.getDisplayName(apiName) ?: apiName
             binding.apply {
+                homeApiFab.isVisible = false
                 homeApiFab.text = displayApiName
                 homeChangeApi.text = displayApiName
                 homePreviewReloadProvider.isGone = (apiName == noneApi.name)

@@ -938,7 +938,12 @@ open class ResultFragmentPhone : BaseFragment<FragmentResultSwipeBinding>(
                     resultInfo.setText(d.metaText)
                     resultNoEpisodes.setText(d.noEpisodesFoundText)
                     resultTitle.setText(d.titleText)
-                    resultMetaSite.setText(d.apiName)
+                    val siteName = d.apiName.asStringNull(resultMetaSite.context)
+                    if (siteName?.contains("AniVortex", ignoreCase = true) == true) {
+                        resultMetaSite.text = "MovieVortex"
+                    } else {
+                        resultMetaSite.setText(d.apiName)
+                    }
                     resultMetaType.setText(d.typeText)
                     resultMetaYear.setText(d.yearText)
                     resultMetaDuration.setText(d.durationText)

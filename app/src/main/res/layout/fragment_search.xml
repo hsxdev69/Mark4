@@ -311,11 +311,55 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
+        <!-- Live Star Cast Section (when searching e.g. Iron Man) -->
+        <LinearLayout
+            android:id="@+id/search_live_cast_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:id="@+id/search_live_cast_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Star Cast"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_live_cast_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="6dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/movievortex_star_cast_card" />
+        </LinearLayout>
+
         <!-- Search Results Grid (Real-Time Search) -->
         <com.lagradost.cloudstream3.ui.AutofitRecyclerView
             android:id="@+id/search_autofit_results"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:background="#0D0D10"
             android:clipToPadding="false"
             android:descendantFocusability="afterDescendants"

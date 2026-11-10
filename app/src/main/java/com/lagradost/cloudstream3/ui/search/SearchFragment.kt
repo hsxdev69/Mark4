@@ -35,6 +35,10 @@ import kotlinx.coroutines.delay
 import com.lagradost.cloudstream3.APIHolder.getApiFromNameNull
 import com.lagradost.cloudstream3.AllLanguagesName
 import com.lagradost.cloudstream3.AnimeSearchResponse
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
+import com.lagradost.cloudstream3.MovieSearchResponse
+import org.json.JSONObject
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.removeKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.removeKeys
 import com.lagradost.cloudstream3.CommonActivity.showToast
@@ -106,6 +110,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             }
         }
 
+        const val MOVIEVORTEX_RECENT_SEARCHES_KEY = "movievortex_recent_media_searches"
         const val SEARCH_QUERY = "search_query"
 
         fun newInstance(query: String): Bundle {
@@ -118,6 +123,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     private val searchViewModel: SearchViewModel by activityViewModels()
     private var bottomSheetDialog: BottomSheetDialog? = null
     private var realTimeSearchJob: Job? = null
+    private var dynamicCastJob: Job? = null
 
     private val speechRecognizerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -147,6 +153,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     }
 
     override fun onDestroyView() {
+        dynamicCastJob?.cancel()
         realTimeSearchJob?.cancel()
         hideKeyboard()
         bottomSheetDialog?.ownHide()
@@ -353,29 +360,128 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         }
     }
 
+    private fun saveRecentMediaSearch(card: SearchResponse?) {
+        if (card == null || card.name.isBlank()) return
+        ioSafe {
+            try {
+                val key = "/"
+                val currentList = getKey<Array<String>>(key)?.toMutableList() ?: mutableListOf()
+                val jsonItem = JSONObject().apply {
+                    put("title", card.name)
+                    put("type", if (card.type == TvType.Movie) "Movie" else if (card.type == TvType.TvSeries) "TV Series" else "Movie")
+                    put("posterUrl", card.posterUrl ?: "")
+                    put("url", card.url)
+                    put("apiName", card.apiName)
+                }.toString()
+                currentList.removeAll { str ->
+                    try {
+                        JSONObject(str).optString("title").equals(card.name, ignoreCase = true)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                currentList.add(0, jsonItem)
+                val trimmed = currentList.take(20).toTypedArray()
+                setKey(key, trimmed)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
+    }
+
+    private fun updateDynamicCast(query: String, binding: FragmentSearchBinding) {
+        dynamicCastJob?.cancel()
+        if (query.isBlank() || query.length < 2) {
+            binding.searchLiveCastContainer.isGone = true
+            return
+        }
+        dynamicCastJob = ioSafe {
+            val (targetTitle, castList) = MovieVortexTmdbHelper.getCastForQuery(query)
+            main {
+                if (castList.isNotEmpty()) {
+                    binding.searchLiveCastTitle.text = if (!targetTitle.isNullOrBlank()) {
+                        "Star Cast: "
+                    } else {
+                        "Star Cast"
+                    }
+                    (binding.searchLiveCastRecycler.adapter as? StarCastAdapter)?.submitList(castList)
+                    binding.searchLiveCastContainer.isVisible = true
+                    (binding.actorsRecycler.adapter as? StarCastAdapter)?.submitList(castList)
+                } else {
+                    binding.searchLiveCastContainer.isGone = true
+                }
+            }
+        }
+    }
+
     private fun loadRecentSearches(adapter: RecentSearchMediaAdapter) {
         ioSafe {
-            val resumeList = HomeViewModel.getResumeWatching() ?: emptyList()
-            val recentItems = if (resumeList.isNotEmpty()) {
-                resumeList.take(10).map {
-                    RecentMediaItem(
-                        title = it.name,
-                        type = if (it.type == TvType.Movie) "Movie" else "TV Series",
-                        posterUrl = it.posterUrl ?: "",
-                        searchResponse = it
+            val key = "/"
+            val savedStrings = getKey<Array<String>>(key) ?: emptyArray()
+            val items = mutableListOf<RecentMediaItem>()
+            for (str in savedStrings) {
+                try {
+                    val obj = JSONObject(str)
+                    val title = obj.optString("title")
+                    val typeStr = obj.optString("type", "Movie")
+                    val posterUrl = obj.optString("posterUrl")
+                    val url = obj.optString("url")
+                    val apiName = obj.optString("apiName")
+                    if (title.isNotBlank()) {
+                        val resp = if (url.isNotBlank() && apiName.isNotBlank()) {
+                            MovieSearchResponse(
+                                name = title,
+                                url = url,
+                                apiName = apiName,
+                                type = if (typeStr == "TV Series") TvType.TvSeries else TvType.Movie,
+                                posterUrl = posterUrl.ifBlank { null }
+                            )
+                        } else null
+
+                        items.add(
+                            RecentMediaItem(
+                                title = title,
+                                type = typeStr,
+                                posterUrl = posterUrl,
+                                url = url,
+                                apiName = apiName,
+                                searchResponse = resp
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            if (items.isEmpty()) {
+                val resumeList = HomeViewModel.getResumeWatching() ?: emptyList()
+                if (resumeList.isNotEmpty()) {
+                    items.addAll(
+                        resumeList.take(10).map {
+                            RecentMediaItem(
+                                title = it.name,
+                                type = if (it.type == TvType.Movie) "Movie" else "TV Series",
+                                posterUrl = it.posterUrl ?: "",
+                                searchResponse = it
+                            )
+                        }
+                    )
+                } else {
+                    items.addAll(
+                        listOf(
+                            RecentMediaItem("Blade Runner 2049", "Movie", "https://image.tmdb.org/t/p/w300/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"),
+                            RecentMediaItem("The Revenant", "Movie", "https://image.tmdb.org/t/p/w300/oXU30erIm58t34BsEL9b8qP94UW.jpg"),
+                            RecentMediaItem("The Big 4", "TV Series", "https://image.tmdb.org/t/p/w300/r2JkrYYq6Xh4k6m4X7e2a9sU3k7.jpg"),
+                            RecentMediaItem("Dune: Part Two", "Movie", "https://image.tmdb.org/t/p/w300/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
+                            RecentMediaItem("Oppenheimer", "Movie", "https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg")
+                        )
                     )
                 }
-            } else {
-                listOf(
-                    RecentMediaItem("Blade Runner 2049", "Movie", "https://image.tmdb.org/t/p/w300/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"),
-                    RecentMediaItem("The Revenant", "Movie", "https://image.tmdb.org/t/p/w300/oXU30erIm58t34BsEL9b8qP94UW.jpg"),
-                    RecentMediaItem("The Big 4", "TV Series", "https://image.tmdb.org/t/p/w300/r2JkrYYq6Xh4k6m4X7e2a9sU3k7.jpg"),
-                    RecentMediaItem("Dune: Part Two", "Movie", "https://image.tmdb.org/t/p/w300/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
-                    RecentMediaItem("Oppenheimer", "Movie", "https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg")
-                )
             }
+
             main {
-                adapter.submitList(recentItems)
+                adapter.submitList(items)
             }
         }
     }
@@ -386,11 +492,17 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     ) {
         reloadRepos()
         initDiscoveryView(binding)
+        val liveCastAdapter = StarCastAdapter { actor ->
+            binding.mainSearch.setQuery(actor.name, true)
+        }
+        binding.searchLiveCastRecycler.adapter = liveCastAdapter
+
         binding.apply {
             val adapter =
                 SearchAdapter(
                     searchAutofitResults,
                 ) { callback ->
+                    saveRecentMediaSearch(callback.card)
                     SearchHelper.handleSearchClickCallback(callback)
                 }
 
@@ -582,6 +694,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                 realTimeSearchJob?.cancel()
                 search(query)
                 searchViewModel.clearSuggestions()
+                updateDynamicCast(query, binding)
 
                 binding.apply {
                     searchDiscoveryScroll.isGone = true
@@ -602,6 +715,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                 realTimeSearchJob?.cancel()
                 val isBlank = newText.isBlank()
                 if (isBlank) {
+                    dynamicCastJob?.cancel()
                     searchViewModel.clearSearch()
                     searchViewModel.updateHistory()
                     searchViewModel.clearSuggestions()
@@ -609,6 +723,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                         loadRecentSearches(it)
                     }
                     binding.apply {
+                        searchLiveCastContainer.isGone = true
                         searchDiscoveryScroll.isVisible = true
                         searchAutofitResults.isGone = true
                         searchMasterRecycler.isGone = true
@@ -628,6 +743,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                     }
 
                     if (newText.trim().length >= 2) {
+                        updateDynamicCast(newText.trim(), binding)
                         realTimeSearchJob = ioSafe {
                             delay(350)
                             main {
@@ -721,6 +837,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
         val masterAdapter =
             ParentItemAdapter(id = "masterAdapter".hashCode(), { callback ->
+                saveRecentMediaSearch(callback.card)
                 SearchHelper.handleSearchClickCallback(callback)
             }, { item ->
                 bottomSheetDialog = activity?.loadHomepageList(item, dismissCallback = {

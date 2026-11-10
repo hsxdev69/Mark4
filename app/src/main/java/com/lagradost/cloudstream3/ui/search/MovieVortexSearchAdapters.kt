@@ -2,6 +2,7 @@ package com.lagradost.cloudstream3.ui.search
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.databinding.MovievortexRecentSearchCardBinding
@@ -12,12 +13,15 @@ data class RecentMediaItem(
     val title: String,
     val type: String,
     val posterUrl: String,
+    val url: String = "",
+    val apiName: String = "",
     val searchResponse: SearchResponse? = null
 )
 
 data class StarCastItem(
     val name: String,
-    val profileUrl: String
+    val profileUrl: String,
+    val role: String = ""
 )
 
 class RecentSearchMediaAdapter(
@@ -80,6 +84,12 @@ class StarCastAdapter(
         val item = items[position]
         holder.binding.apply {
             actorName.text = item.name
+            if (item.role.isNotBlank()) {
+                actorRole.isVisible = true
+                actorRole.text = item.role
+            } else {
+                actorRole.isVisible = false
+            }
             if (item.profileUrl.isNotBlank()) {
                 actorImage.loadImage(item.profileUrl)
             }

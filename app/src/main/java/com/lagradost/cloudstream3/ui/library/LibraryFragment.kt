@@ -134,6 +134,8 @@ class LibraryFragment : BaseFragment<FragmentLibraryBinding>(
         binding: FragmentLibraryBinding,
         savedInstanceState: Bundle?
     ) {
+        binding.sortFab.isVisible = false
+        binding.libraryRandom.isVisible = false
         binding.sortFab.setOnClickListener(sortChangeClickListener)
         binding.librarySort.setOnClickListener(sortChangeClickListener)
 
@@ -280,14 +282,9 @@ class LibraryFragment : BaseFragment<FragmentLibraryBinding>(
         binding.viewpager.setPageTransformer(LibraryScrollTransformer())
 
         binding.viewpager.adapter = ViewpagerAdapter(
-            { isScrollingDown: Boolean ->
-                if (isScrollingDown) {
-                    binding.sortFab.shrink()
-                    binding.libraryRandom.shrink()
-                } else {
-                    binding.sortFab.extend()
-                    binding.libraryRandom.extend()
-                }
+            { _: Boolean ->
+                binding.sortFab.isVisible = false
+                binding.libraryRandom.isVisible = false
             }) callback@{ searchClickCallback ->
             // To prevent future accidents
             debugAssert({

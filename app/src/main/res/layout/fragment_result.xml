@@ -15,57 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:orientation="vertical"
-        app:shimmer_auto_start="true"
-        app:shimmer_base_alpha="0.2"
-        app:shimmer_duration="@integer/loading_time"
-        app:shimmer_highlight_alpha="0.3"
+        android:background="@color/black"
+        app:shimmer_auto_start="false"
         tools:visibility="gone">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/result_padding"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="@dimen/loading_margin"
-                android:orientation="horizontal">
-
-                <include layout="@layout/loading_poster" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="@dimen/loading_margin"
-                    android:layout_marginEnd="@dimen/loading_margin"
-                    android:orientation="vertical">
-
-                    <include layout="@layout/loading_line" />
-
-                    <include layout="@layout/loading_line" />
-
-                    <include layout="@layout/loading_line" />
-
-                    <include layout="@layout/loading_line" />
-
-                    <include layout="@layout/loading_line_short" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                tools:ignore="ContentDescription" />
-
-            <include layout="@layout/loading_episode" />
-
-            <include layout="@layout/loading_episode" />
-
-            <include layout="@layout/loading_episode" />
-        </LinearLayout>
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/white" />
     </com.facebook.shimmer.ShimmerFrameLayout>
     <!--<ProgressBar
             android:visibility="visible"

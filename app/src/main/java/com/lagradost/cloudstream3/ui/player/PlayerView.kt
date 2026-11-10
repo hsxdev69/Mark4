@@ -759,9 +759,7 @@ class PlayerView @JvmOverloads constructor(
      */
     fun dynamicOrientation(): Int {
         if (isLayout(TV or EMULATOR)) return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        return if (autoPlayerRotateEnabled && isVerticalOrientation)
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
-        else ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        return ActivityInfo.SCREEN_ORIENTATION_USER
     }
 
     /** Event dispatch */

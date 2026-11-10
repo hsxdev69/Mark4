@@ -1730,12 +1730,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 )
             }
             try {
-                getOrCreateBadge(R.id.navigation_library).apply {
-                    number = 7
-                    backgroundColor = android.graphics.Color.parseColor("#F43F5E")
-                    badgeTextColor = android.graphics.Color.WHITE
-                    isVisible = true
-                }
+                removeBadge(R.id.navigation_library)
             } catch (_: Throwable) { }
         }
 

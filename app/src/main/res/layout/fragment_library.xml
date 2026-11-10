@@ -28,6 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:visibility="gone"
             app:layout_scrollFlags="scroll|enterAlways">
 
             <ImageView
@@ -190,6 +191,7 @@
             android:layout_marginBottom="90dp"
             android:text="@string/sort"
             android:textColor="?attr/textColor"
+            android:visibility="gone"
             app:icon="@drawable/ic_baseline_sort_24"
             tools:ignore="ContentDescription" />
     </FrameLayout>

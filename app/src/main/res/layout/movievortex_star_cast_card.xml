@@ -37,4 +37,16 @@
         android:textSize="12sp"
         android:fontFamily="sans-serif-medium"
         tools:text="Leonardo DiCaprio" />
+
+    <TextView
+        android:id="@+id/actor_role"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#8E8E93"
+        android:textSize="11sp"
+        android:visibility="gone"
+        tools:text="Tony Stark" />
 </LinearLayout>

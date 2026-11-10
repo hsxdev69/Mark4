@@ -243,28 +243,17 @@ object SettingsFragmentScreen : Screen {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(MaterialTheme.padding.small))
-                SettingsSearch(textFieldState = textFieldState)
-                Spacer(modifier = Modifier.height(MaterialTheme.padding.small))
+                Spacer(modifier = Modifier.height(MaterialTheme.padding.medium))
 
-                SettingSearchResults(
-                    nestedScrollConnection = parentFirstScrollConnection,
-                    searchKey = textFieldState.text.toString(),
-                    deferredItems = ::generateSearchItems,
-                    onItemClick = { item ->
-                        SearchableSettings.highlightKey = item.highlightKey
-                        activity?.navigate(item.navigation)
-                    }, empty = {
-                        Column(
-                            modifier = Modifier
-                                .nestedScroll(parentFirstScrollConnection)
-                        ) {
-                            screens.forEach { settingsTab ->
-                                SettingsTab(settingsTab)
-                            }
-                            BuildStamp()
-                        }
-                    })
+                Column(
+                    modifier = Modifier
+                        .nestedScroll(parentFirstScrollConnection)
+                ) {
+                    screens.forEach { settingsTab ->
+                        SettingsTab(settingsTab)
+                    }
+                    BuildStamp()
+                }
 
             }
         }

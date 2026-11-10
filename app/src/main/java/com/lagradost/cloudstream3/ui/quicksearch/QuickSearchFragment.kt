@@ -156,8 +156,10 @@ class QuickSearchFragment : BaseFragment<QuickSearchBinding>(
                                     page,
                                     MainPageRequest(section.name, section.data, section.horizontalImages)
                                 )
-                                response?.items?.let { items ->
-                                    newItems.addAll(items)
+                                response?.items?.let { homeLists ->
+                                    homeLists.forEach { homeList ->
+                                        newItems.addAll(homeList.list)
+                                    }
                                 }
                                 if (response?.hasNext == true) {
                                     hasNextPage = true
@@ -178,7 +180,7 @@ class QuickSearchFragment : BaseFragment<QuickSearchBinding>(
                         try {
                             val searchResult = api.search(query, page) ?: api.search(query)
                             when (searchResult) {
-                                is SearchResponseList -> newItems.addAll(searchResult.list)
+                                is SearchResponseList -> newItems.addAll(searchResult.items)
                                 is List<*> -> newItems.addAll(searchResult.filterIsInstance<SearchResponse>())
                             }
                             hasNextPage = newItems.isNotEmpty()

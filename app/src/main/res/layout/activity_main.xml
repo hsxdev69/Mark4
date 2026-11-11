@@ -34,13 +34,26 @@
                               app:labelVisibilityMode="unlabeled"
 
                   -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/nav_rail_view"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/mobile_navigation" />
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/nav_view"
             android:layout_height="@dimen/nav_view_height"
             android:layout_width="0dp"
             app:labelVisibilityMode="unlabeled"
             android:background="@drawable/movievortex_bottom_nav_bg"
-            app:elevation="8dp"
+            app:elevation="0dp"
+            android:translationZ="10dp"
             app:itemIconSize="26dp"
             app:itemIconTint="@color/movievortex_nav_selector"
             app:itemTextColor="@color/movievortex_nav_selector"
@@ -50,18 +63,6 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:menu="@menu/bottom_nav_menu" />
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/nav_host_fragment"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:defaultNavHost="true"
-            app:layout_constraintBottom_toTopOf="@+id/cast_mini_controller_holder"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/nav_rail_view"
-            app:layout_constraintTop_toTopOf="parent"
-            app:navGraph="@navigation/mobile_navigation" />
 
         <LinearLayout
             android:id="@+id/cast_mini_controller_holder"

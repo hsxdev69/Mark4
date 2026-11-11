@@ -42,7 +42,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleStableDebug --stacktrace --no-daemon
+        run: ./gradlew assembleStableDebug --build-cache --parallel --stacktrace
 
       - name: Rename APK for Release
         run: |

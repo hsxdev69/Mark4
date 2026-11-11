@@ -1720,8 +1720,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val rippleColor = ColorStateList.valueOf(getResourceColor(R.attr.colorPrimary, 0.1f))
 
         binding?.navView?.apply {
-            itemRippleColor = rippleColor
-            itemActiveIndicatorColor = ColorStateList.valueOf(android.graphics.Color.parseColor("#26FFFFFF"))
+            itemRippleColor = ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+            itemActiveIndicatorColor = ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
             setupWithNavController(navController)
             setOnItemSelectedListener { item ->
                 onNavDestinationSelected(

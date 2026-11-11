@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Top-Left Rounded Square Filled -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M5.5,3.5 L9.5,3.5 C10.6,3.5 11.5,4.4 11.5,5.5 L11.5,9.5 C11.5,10.6 10.6,11.5 9.5,11.5 L5.5,11.5 C4.4,11.5 3.5,10.6 3.5,9.5 L3.5,5.5 C3.5,4.4 4.4,3.5 5.5,3.5 Z" />
+    <!-- Top-Right Rounded Square Filled -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M14.5,3.5 L18.5,3.5 C19.6,3.5 20.5,4.4 20.5,5.5 L20.5,9.5 C20.5,10.6 19.6,11.5 18.5,11.5 L14.5,11.5 C13.4,11.5 12.5,10.6 12.5,9.5 L12.5,5.5 C12.5,4.4 13.4,3.5 14.5,3.5 Z" />
+    <!-- Bottom-Left Rounded Square Filled -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M5.5,12.5 L9.5,12.5 C10.6,12.5 11.5,13.4 11.5,14.5 L11.5,18.5 C11.5,19.6 10.6,20.5 9.5,20.5 L5.5,20.5 C4.4,20.5 3.5,19.6 3.5,18.5 L3.5,14.5 C3.5,13.4 4.4,12.5 5.5,12.5 Z" />
+    <!-- Bottom-Right Rounded Square Filled -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M14.5,12.5 L18.5,12.5 C19.6,12.5 20.5,13.4 20.5,14.5 L20.5,18.5 C20.5,19.6 19.6,20.5 18.5,20.5 L14.5,20.5 C13.4,20.5 12.5,19.6 12.5,18.5 L12.5,14.5 C12.5,13.4 13.4,12.5 14.5,12.5 Z" />
+</vector>

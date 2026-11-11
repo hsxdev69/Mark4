@@ -1148,4 +1148,8 @@
         <item name="android:fontFamily">sans-serif-normal</item>
         <item name="android:letterSpacing">0.03</item>
     </style>
+
+    <style name="MovieVortex.TransparentActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/transparent</item>
+    </style>
 </resources>

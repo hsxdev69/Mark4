@@ -6,7 +6,7 @@
         android:title="@string/title_home" />
     <item
         android:id="@+id/navigation_quick_search"
-        android:icon="@drawable/baseline_grid_view_24"
+        android:icon="@drawable/movievortex_categories_selector"
         android:title="Categories" />
     <item
         android:id="@+id/navigation_search"
@@ -18,6 +18,6 @@
         android:title="Wishlist" />
     <item
         android:id="@+id/navigation_settings"
-        android:icon="@drawable/ic_outline_account_circle_24"
+        android:icon="@drawable/movievortex_profile_selector"
         android:title="Profile" />
 </menu>
